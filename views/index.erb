@@ -14,12 +14,18 @@
 
   <!--フォームの指定-->
   <form id="form" action="/create" method="post">
+  
     <!--テキストエリアの指定-->
     <textarea id="md_editor" name="body" ondragover="onDragOver(event)" ondrop="onDrop(event)"></textarea>
+    
+    <!--プレビューエリアの指定-->
     <div id="md_preview"></div>
+  
     <!--送信ボタン-->
     <input type="submit">
+  
   </form>
+
   
 
   <!--マークダウンをプレビュー画面に表示する スクリプト-->
@@ -32,6 +38,7 @@
       });
     });
   </script>
+
 
 
   <!--textareaにドラッグアンドドロップで画像コード自動挿入 スクリプト-->
@@ -58,7 +65,7 @@
         }
     }
     
-    // ファイルアップロード
+    // ファイルアップロード&コード挿入 スクリプト
     function imageFileUpload(f) {
         var formData = new FormData();
         formData.append('file', f);
@@ -70,8 +77,9 @@
             url: '/image',
             data: formData,
             dataType: 'json',
+            // 通信成功したら
             success: function(json) {
-              // テキストを表示
+              // textareaの最後にテキストを挿入
               var addText = "![" + f.name + "](" + json.img + ")";
               var getData = String($("#md_editor").val());
               $("#md_editor").val( getData + addText );
