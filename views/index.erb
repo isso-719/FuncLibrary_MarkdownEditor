@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  
+  <!--必要なjsライブラリをインポート-->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+</head>
+<body>
+
+
+  <!--フォームの指定-->
+  <form id="form" action="/create" method="post">
+    <!--テキストエリアの指定-->
+    <textarea id="md_editor" name="body" ondragover="onDragOver(event)" ondrop="onDrop(event)"></textarea>
+    <div id="md_preview" style="max-width: 100%"></div>
+    <!--送信ボタン-->
+    <input type="submit">
+  </form>
+  
+
+  <!--マークダウンをプレビュー画面に表示する スクリプト-->
+  <!--https://qiita.com/samuraibrass/items/d40d54aa0754692d5439 を参考に-->
+  <script>
+    $(function () {
+      $('#md_editor').keyup(function () {
+        var html = marked($(this).val());
+        $('#md_preview').html(html);
+      });
+    });
+  </script>
+
+
+  <!--textareaにドラッグアンドドロップで画像コード自動挿入 スクリプト-->
+  <script>
+    // File APIに対応していない場合はフォームを隠す
+    if (!window.File) {
+        $('#form').style.display = "none";
+    }
+    // ブラウザ上でファイルを展開する挙動を抑止
+    function onDragOver(event) {
+        event.preventDefault();
+    }
+    
+    // Drop領域にドロップした際のファイルのプロパティ情報読み取り処理
+    function onDrop(event) {
+        // ブラウザ上でファイルを展開する挙動を抑止
+        event.preventDefault();
+    
+        // ドロップされたファイルのfilesプロパティを参照
+        var files = event.dataTransfer.files;
+        for (var i=0; i<files.length; i++) {
+            // 一件ずつアップロード
+            imageFileUpload(files[i]);
+        }
+    }
+    
+    // ファイルアップロード
+    function imageFileUpload(f) {
+        var formData = new FormData();
+        formData.append('file', f);
+        $.ajax({
+            type: 'POST',
+            contentType: false,
+            processData: false,
+            // 画像POST先
+            url: '/image',
+            data: formData,
+            dataType: 'json',
+            success: function(json) {
+              // テキストを表示
+              var addText = "![" + f.name + "](" + json.img + ")";
+              var getData = String($("#md_editor").val());
+              $("#md_editor").val( getData + addText );
+              
+              // md_editorのプレビューを更新
+              var html = marked($("#md_editor").val());
+              $('#md_preview').html(html);
+            }
+        });
+    }
+  </script>
+
+  
+  <!--アップロードしたmdを表示-->
+  <% @contents.each do |c|  %>
+    <!--表示エリア-->
+    <div id="content<%= c.id %>"></div>
+
+    <!--mdコンバート用スクリプト-->
+    <script>
+      document.getElementById('content<%= c.id %>').innerHTML = marked(`<%= c.body %>`);
+    </script>
+
+  <% end %>
+
+</body>
+</html>
