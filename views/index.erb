@@ -100,7 +100,7 @@
 
     <!--mdコンバート用スクリプト-->
     <script>
-      document.getElementById('content<%= c.id %>').innerHTML = marked(`<%= c.body %>`);
+      document.getElementById('content<%= c.id %>').innerHTML = marked(`<%= c.body.gsub('`', '` + "`" + `') %>`);
     </script>
 
   <% end %>
